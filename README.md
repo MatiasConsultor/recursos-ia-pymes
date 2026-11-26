@@ -30,8 +30,10 @@ Para comprobar el ejemplo y los casos límite, ejecutá `node --test test-roi.cj
 1. Descargá el JSON e importalo con **Workflows → Import from File**. El flujo queda desactivado.
 2. Configurá las credenciales en n8n y corregí los marcadores de la hoja y del destinatario interno. No guardes las claves en el archivo.
 3. Ejecutá una consulta ficticia. Revisá el borrador, el registro y la notificación antes de activar el webhook. Probá por separado una salida inválida y un fallo de la llamada HTTP.
-4. Antes de usar datos reales, revisá qué información enviás al proveedor: el flujo original le pasa nombre y mensaje. El email de aviso va al equipo para revisión.
+4. Antes de usar datos reales, revisá el contenido del formulario. El flujo envía al modelo solo el texto de la consulta, sin los campos de nombre, correo ni teléfono. El texto libre todavía puede contener datos personales. El aviso va al equipo para revisión.
 
-Se verificó la estructura del JSON y la ausencia de credenciales incrustadas. Todavía no se validó la ejecución de extremo a extremo en una instancia de n8n.
+**Prueba en n8n 2.49.7 (26/11/2026):** el webhook respondió HTTP 200 en tres escenarios con datos ficticios. Con una salida válida se generó el borrador; una salida inválida o un HTTP 503 del proveedor pasaron a revisión manual sin borrador. Se verificaron el registro y el aviso con servicios simulados.
+
+Antes de usarla en producción, verificá los nodos de Google Sheets, Gmail y el proveedor de IA con credenciales y datos de prueba. La plantilla se distribuye desactivada y sin credenciales.
 
 Material de trabajo para pymes y autónomos. Al citarlo, acreditá a **Impulso Pymes IA** y enlazá el recurso correspondiente.
