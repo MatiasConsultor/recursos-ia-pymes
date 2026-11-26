@@ -11,7 +11,13 @@ Recursos prácticos de **Matias Montico · [Impulso Pymes IA](https://impulsopym
 
 Empezá con el checklist. Después compará dos o tres tareas en la matriz y pasá la candidata por la calculadora. Medí durante una semana el tiempo por tarea, incluida la revisión, para sustituir los supuestos por datos propios.
 
+## Ejercicio guiado: preparar presupuestos con IA
+
+[Compará diez presupuestos antes y después de un borrador con IA](ejercicios/automatizar-presupuestos/README.md). Incluye datos ficticios descargables, el tiempo de revisión y los resultados esperados a 20 y 40 presupuestos al mes.
+
 ## Calculadora: cómo usarla
+
+**[Probar la calculadora en el navegador](https://matiasconsultor.github.io/recursos-ia-pymes/)**
 
 Descargá el repositorio y abrí `index.html` en tu navegador. No necesita conexión, registro ni claves. Los datos del cálculo no se transmiten ni se guardan.
 
