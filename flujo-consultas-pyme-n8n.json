@@ -20,7 +20,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Normaliza los datos que llegan del formulario web.\n// Ajusta los nombres de campo a los de tu propio formulario.\nconst d = $input.first().json.body || $input.first().json;\nreturn [{ json: {\n  nombre: (d.nombre || d.name || '').trim(),\n  email: (d.email || '').trim().toLowerCase(),\n  telefono: (d.telefono || d.phone || '').trim(),\n  mensaje: (d.mensaje || d.message || '').trim(),\n  origen: d.origen || 'formulario web',\n  recibido: new Date().toISOString()\n} }];"
+        "jsCode": "const data = $input.first().json;\nconst d = data.body && typeof data.body === 'object' ? data.body : data;\nconst text = x => typeof x === 'string' ? x.trim() : '';\nreturn [{json: {\n nombre: text(d.nombre || d.name), email: text(d.email).toLowerCase(),\n telefono: text(d.telefono || d.phone), mensaje: text(d.mensaje || d.message).slice(0, 4000),\n origen: text(d.origen) || 'formulario web', recibido: new Date().toISOString()\n}}];"
       },
       "id": "a1000000-0000-4000-8000-000000000002",
       "name": "Normalizar datos",
@@ -39,8 +39,10 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({\n  model: 'gpt-4o-mini',\n  temperature: 0.2,\n  messages: [\n    { role: 'system', content: 'Sos el asistente de una pyme. Devolve SIEMPRE un JSON valido con las claves: categoria (comercial, soporte, administracion u otro), urgencia (alta, media o baja), resumen (maximo 25 palabras) y respuesta (borrador cordial en espanol, maximo 120 palabras, sin inventar precios ni plazos).' },\n    { role: 'user', content: 'Consulta de ' + $json.nombre + ': ' + $json.mensaje }\n  ],\n  response_format: { type: 'json_object' }\n}) }}",
-        "options": {}
+        "jsonBody": "={{ JSON.stringify({\n  model: 'gpt-4o-mini',\n  temperature: 0.2,\n  messages: [\n    { role: 'system', content: 'Sos el asistente de una pyme. Devolve SIEMPRE un JSON valido con las claves: categoria (comercial, soporte, administracion u otro), urgencia (alta, media o baja), resumen (maximo 25 palabras) y respuesta (borrador cordial en espanol, maximo 120 palabras, sin inventar precios ni plazos).' },\n    { role: 'user', content: $json.mensaje }\n  ],\n  response_format: { type: 'json_object' }\n}) }}",
+        "options": {
+          "timeout": 10000
+        }
       },
       "id": "a1000000-0000-4000-8000-000000000003",
       "name": "Clasificar y redactar (IA)",
@@ -49,11 +51,12 @@
       "position": [
         40,
         0
-      ]
+      ],
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
-        "jsCode": "// Extrae el JSON devuelto por el modelo y lo une a los datos de la consulta.\nconst ia = $input.first().json;\nlet salida = {};\ntry {\n  salida = JSON.parse(ia.choices[0].message.content);\n} catch (e) {\n  salida = { categoria: 'otro', urgencia: 'media', resumen: 'No se pudo interpretar la respuesta de la IA', respuesta: '' };\n}\nconst consulta = $('Normalizar datos').first().json;\nreturn [{ json: { ...consulta, ...salida } }];"
+        "jsCode": "const ia = $input.first().json;\nconst consulta = $('Normalizar datos').first().json;\nlet salida;\ntry {\n const raw = JSON.parse(ia.choices[0].message.content);\n if (!raw || !['comercial','soporte','administracion','otro'].includes(raw.categoria) ||\n     !['alta','media','baja'].includes(raw.urgencia) ||\n     typeof raw.resumen !== 'string' || typeof raw.respuesta !== 'string') throw new Error('Formato inválido');\n salida = {categoria:raw.categoria, urgencia:raw.urgencia, resumen:raw.resumen.slice(0,400), respuesta:raw.respuesta.slice(0,1400), estado_ia:'borrador'};\n} catch {\n salida = {categoria:'otro', urgencia:'media', resumen:'Revisión manual: respuesta no disponible o no válida', respuesta:'', estado_ia:'revision_manual'};\n}\nreturn [{json:{...consulta,...salida}}];"
       },
       "id": "a1000000-0000-4000-8000-000000000004",
       "name": "Extraer resultado",
@@ -67,8 +70,16 @@
     {
       "parameters": {
         "operation": "append",
-        "documentId": "REEMPLAZAR_ID_DE_TU_GOOGLE_SHEET",
-        "sheetName": "Consultas",
+        "documentId": {
+          "__rl": true,
+          "value": "REEMPLAZAR_ID_DE_TU_GOOGLE_SHEET",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Consultas",
+          "mode": "name"
+        },
         "columns": {
           "mappingMode": "autoMapInputData",
           "value": {}
@@ -87,9 +98,9 @@
     {
       "parameters": {
         "sendTo": "REEMPLAZAR@TU-EMPRESA.COM",
-        "subject": "=[{{ $json.urgencia }}] Nueva consulta de {{ $json.nombre }} ({{ $json.categoria }})",
+        "subject": "=[{{ $('Extraer resultado').first().json.urgencia }}] Nueva consulta de {{ $('Extraer resultado').first().json.nombre }} ({{ $('Extraer resultado').first().json.categoria }})",
         "emailType": "text",
-        "message": "=Resumen: {{ $json.resumen }}\n\nContacto: {{ $json.nombre }} — {{ $json.email }} — {{ $json.telefono }}\nOrigen: {{ $json.origen }}\n\nMensaje original:\n{{ $json.mensaje }}\n\n--- BORRADOR DE RESPUESTA (revisar antes de enviar) ---\n{{ $json.respuesta }}",
+        "message": "=Resumen: {{ $('Extraer resultado').first().json.resumen }}\n\nContacto: {{ $('Extraer resultado').first().json.nombre }} — {{ $('Extraer resultado').first().json.email }} — {{ $('Extraer resultado').first().json.telefono }}\nOrigen: {{ $('Extraer resultado').first().json.origen }}\n\nMensaje original:\n{{ $('Extraer resultado').first().json.mensaje }}\n\n--- BORRADOR DE RESPUESTA (revisar antes de enviar) ---\n{{ $('Extraer resultado').first().json.respuesta }}",
         "options": {}
       },
       "id": "a1000000-0000-4000-8000-000000000006",
@@ -104,7 +115,7 @@
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": "={{ JSON.stringify({ ok: true, mensaje: 'Consulta recibida. Te respondemos en menos de 24 horas.' }) }}",
+        "responseBody": "={{ { ok: true, mensaje: 'Consulta recibida.' } }}",
         "options": {}
       },
       "id": "a1000000-0000-4000-8000-000000000007",
