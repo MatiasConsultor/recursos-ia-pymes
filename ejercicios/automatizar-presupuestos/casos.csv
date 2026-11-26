@@ -1,0 +1,11 @@
+caso;tipo;minutos_manual;minutos_borrador_ia;minutos_revision;minutos_retrabajo;incidencia_detectada
+P01;estandar;12;3;3;0;ninguna
+P02;estandar;13;3;3;0;ninguna
+P03;estandar;11;3;3;0;ninguna
+P04;estandar;12;3;3;0;ninguna
+P05;variante;14;3;4;0;ninguna
+P06;estandar;10;3;3;0;ninguna
+P07;variante;13;3;4;0;ninguna
+P08;estandar;11;3;3;0;ninguna
+P09;dato_incompleto;12;3;4;2;falta_cantidad
+P10;excepcion;12;3;5;6;condicion_no_aprobada
