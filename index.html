@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Compara las horas que libera una automatización, el ahorro de caja y el retorno a doce meses. Una herramienta gratuita de Impulso Pymes IA.">
+<title>Calculadora de ROI de IA para pymes | Impulso Pymes IA</title>
+<style>
+:root{color-scheme:light;--ink:#2e2017;--muted:#6a5547;--paper:#fffdf9;--cream:#faf5ec;--line:#e4d8ca;--accent:#9b4329;--dark:#302218}*{box-sizing:border-box}
+body{margin:0;background:var(--cream);color:var(--ink);font:16px/1.55 system-ui,sans-serif}main,footer{max-width:1120px;margin:auto;padding:clamp(20px,4vw,54px)}.eyebrow{font-size:.8rem;font-weight:750;letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}h1,h2{font-family:Georgia,serif;line-height:1.1;margin:0 0 14px}h1{font-size:clamp(2.3rem,6vw,4.2rem);max-width:760px}h2{font-size:1.65rem}.lede{max-width:700px;color:var(--muted);margin:0 0 30px}.columns{display:grid;grid-template-columns:1fr 1.06fr;gap:18px;align-items:start}.panel{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:22px}.grid,.results{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+label{display:block;font-weight:660;font-size:.875rem}input{display:block;width:100%;max-width:100%;font:inherit;padding:8px 10px;border:1px solid #a89786;border-radius:7px;color:var(--ink);background:white;margin-top:5px}input:focus-visible,button:focus-visible,a:focus-visible,summary:focus-visible{outline:3px solid #ba6b4c;outline-offset:3px}
+button{margin-top:18px;background:var(--accent);color:white;border:none;border-radius:7px;padding:9px 14px;font:inherit;font-weight:670;cursor:pointer}.caption{font-size:.85rem;color:var(--muted);margin:.6em 0 0}.error{color:#922e21;font-weight:670}.results div{background:var(--cream);padding:12px;border-radius:10px;min-width:0}.results div:first-child{grid-column:1/-1;background:var(--dark);color:white}.results dt{font-size:.85rem}.results dd{font-weight:730;font-size:1.4rem;margin:3px 0 0;overflow-wrap:anywhere}.formula{margin-top:18px}summary{cursor:pointer;font-weight:700}a{color:var(--accent)}footer{padding-top:0;font-size:.9rem}@media(max-width:780px){.columns{grid-template-columns:1fr}}@media(max-width:390px){.panel{padding:16px}.grid,.results{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<header>
+<p class="eyebrow">Impulso Pymes IA · Herramienta gratuita</p>
+<h1>¿Compensa automatizar esta tarea?</h1>
+<p class="lede">Calculá cuántas horas podés liberar y cuánto tardarías en recuperar la inversión. Compará la capacidad del equipo con el dinero que realmente deja de salir de caja.</p>
+</header>
+<div class="columns">
+<section class="panel" aria-labelledby="inputs-title">
+<h2 id="inputs-title">Datos de una tarea</h2>
+<form id="inputs" autocomplete="off">
+<div class="grid">
+<label>Personas<input name="people" type="number" min="1" max="1000000" step="1" value="1" required></label>
+<label>Horas semanales por persona<input name="hours" type="number" min="0" max="168" step="any" value="4" required></label>
+<label>Tiempo reducido (%)<input name="reduction" type="number" min="0" max="100" step="any" value="50" required></label>
+<label>Horas liberadas que se aprovechan (%)<input name="reuse" type="number" min="0" max="100" step="any" value="75" required></label>
+<label>Valor de una hora aprovechada (€)<input name="hourValue" type="number" min="0" max="1000000000" step="any" value="24" required></label>
+<label>Gastos evitados verificables (€/mes)<input name="cashSavings" type="number" min="0" max="1000000000" step="any" value="0" required></label>
+<label>Herramientas y mantenimiento (€/mes)<input name="ongoing" type="number" min="0" max="1000000000" step="any" value="35" required></label>
+<label>Implantación y formación inicial (€)<input name="initial" type="number" min="0" max="1000000000" step="any" value="270" required></label>
+</div>
+<p class="caption">Usá horas netas de revisión. En gastos evitados poné solo importes que dejarías de pagar, como horas extra o servicios externos.</p>
+<button type="submit">Calcular</button>
+<p id="error" class="error" role="alert" hidden></p>
+</form>
+<noscript><p>Activá JavaScript para calcular o consultá la metodología al final.</p></noscript>
+</section>
+<section class="panel" aria-labelledby="results-title">
+<h2 id="results-title">Resultados estimados</h2>
+<dl class="results" id="results" aria-live="polite" aria-atomic="true">
+<div><dt>Horas liberadas al mes</dt><dd id="freed">—</dd></div>
+<div><dt>Valor de capacidad aprovechada al mes</dt><dd id="capacity">—</dd></div>
+<div><dt>Resultado neto de caja al mes</dt><dd id="netCash">—</dd></div>
+<div><dt>ROI de capacidad a 12 meses</dt><dd id="capacityRoi">—</dd></div>
+<div><dt>ROI de caja a 12 meses</dt><dd id="cashRoi">—</dd></div>
+<div><dt>Recuperación según capacidad</dt><dd id="capacityPayback">—</dd></div>
+<div><dt>Recuperación según caja</dt><dd id="cashPayback">—</dd></div>
+</dl>
+<p class="caption">Las dos estimaciones son perspectivas separadas. No sumes el valor de las horas y los gastos evitados: podrías contar dos veces el mismo beneficio.</p>
+</section>
+</div>
+<details class="panel formula">
+<summary>Metodología y límites</summary>
+<ul>
+<li>Horas/mes = personas × horas semanales × reducción ÷ 100 × 52/12.</li>
+<li>Valor de capacidad = horas liberadas × porcentaje aprovechado ÷ 100 × valor por hora.</li>
+<li>En cada perspectiva, el neto mensual es el beneficio bruto correspondiente menos herramientas y mantenimiento.</li>
+<li>ROI a 12 meses = (beneficio bruto anual − costes anuales − implantación) ÷ (costes anuales + implantación). Si el coste total es cero, el ROI no se define.</li>
+<li>Recuperación = coste inicial ÷ neto mensual positivo. Con neto cero o negativo, no se recupera bajo estos supuestos.</li>
+</ul>
+<p>Supone un volumen, costes y beneficios constantes. No incluye impuestos, descuento financiero ni estacionalidad. Esta versión usa 52/12 semanas exactas por mes.</p>
+</details>
+</main>
+<footer>Por <a href="https://impulsopymesia.com/">Matias Montico · Impulso Pymes IA</a>. <a href="https://impulsopymesia.com/recursos/calculadora-roi-ia/">Calculadora original y guía</a>. El cálculo se hace en tu navegador, sin enviar ni guardar los datos.</footer>
+<script id="roi-core">
+"use strict";
+function calculateRoi(input) {
+  const {people,hours,reduction,reuse,hourValue,cashSavings,ongoing,initial}=input;
+  if (!Object.values({people,hours,reduction,reuse,hourValue,cashSavings,ongoing,initial}).every(x=>Number.isFinite(x) && x>=0) ||
+      !Number.isInteger(people) || people<1 || people>1e6 || hours>168 || reduction>100 || reuse>100 ||
+      [hourValue,cashSavings,ongoing,initial].some(x=>x>1e9)) throw new RangeError('Revisá los valores indicados.');
+  const freed=people*hours*(reduction/100)*(52/12);
+  const capacity=freed*(reuse/100)*hourValue;
+  const netCash=cashSavings-ongoing;
+  const annualCost=initial+ongoing*12;
+  const roi=benefit=>annualCost===0?null:(benefit*12-annualCost)/annualCost;
+  const payback=benefit=>benefit<=ongoing?null:initial/(benefit-ongoing);
+  return {freed,capacity,netCash,capacityRoi:roi(capacity),cashRoi:roi(cashSavings),capacityPayback:payback(capacity),cashPayback:payback(cashSavings)};
+}
+</script>
+<script>
+"use strict";
+const inputForm=document.getElementById('inputs'), error=document.getElementById('error');
+const money=new Intl.NumberFormat('es-ES',{style:'currency',currency:'EUR',maximumFractionDigits:2,minimumFractionDigits:2});
+const num=new Intl.NumberFormat('es-ES',{maximumFractionDigits:1});
+const pct=new Intl.NumberFormat('es-ES',{style:'percent',maximumFractionDigits:1});
+function update(){
+  try {
+    const values=Object.fromEntries([...new FormData(inputForm)].map(([key,value])=>[key,value.trim()===''?NaN:Number(value)]));
+    const r=calculateRoi(values);
+    const formatted={freed:num.format(r.freed)+' h',capacity:money.format(r.capacity),netCash:money.format(r.netCash)};
+    for (const k of ['capacityRoi','cashRoi']) formatted[k]=r[k]===null?'No definido':pct.format(r[k]);
+    for (const k of ['capacityPayback','cashPayback']) formatted[k]=r[k]===null?'No se recupera':num.format(r[k])+' meses';
+    for (const [key,value] of Object.entries(formatted)) document.getElementById(key).textContent=value;
+    error.hidden=true;
+  } catch(e){error.textContent=e.message;error.hidden=false;}
+}
+inputForm.addEventListener('submit',e=>{e.preventDefault();update();});
+update();
+</script>
+</body>
+</html>
